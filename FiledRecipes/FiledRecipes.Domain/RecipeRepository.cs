@@ -128,23 +128,20 @@ namespace FiledRecipes.Domain
             }
         }
 
-        public void load()
+        public virtual void Load()
         {
             List<IRecipe> recipes = new List<IRecipe>();
-
+            RecipeReadStatus status = RecipeReadStatus.Indefinite;
+            Recipe totalRecipe = null;
             using (StreamReader reader = new StreamReader(_path))
             {
-                Recipe recipe = null;
+                
                 String line;
                 while ((line = reader.ReadLine()) != null)
-                {
-                    RecipeReadStatus status = new RecipeReadStatus();
-
+                {                  
                     switch (line)
                     {
-                        case "":
-                            break;
-
+                        
                         case SectionRecipe:
                             status = RecipeReadStatus.New;
                             break;
@@ -158,8 +155,8 @@ namespace FiledRecipes.Domain
                             switch (status)
                             {
                                 case RecipeReadStatus.New:
-                                    recipe = new Recipe(line);
-                                    recipes.Add(recipe);
+                                    totalRecipe = new Recipe(line);
+                                    recipes.Add(totalRecipe);
                                     break;
                                 case RecipeReadStatus.Ingredient:
                                     string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
@@ -171,10 +168,10 @@ namespace FiledRecipes.Domain
                                     ingredient.Amount = ingredients[0];
                                     ingredient.Measure = ingredients[1];
                                     ingredient.Name = ingredients[2];
-                                    recipe.Add(ingredient);
+                                    totalRecipe.Add(ingredient);
                                     break;
                                 case RecipeReadStatus.Instruction:
-                                    recipe.Add(line);
+                                    totalRecipe.Add(line);
                                     break;
                                 case RecipeReadStatus.Indefinite:
                                     throw new FileFormatException();
@@ -182,18 +179,18 @@ namespace FiledRecipes.Domain
                                     break;
                             }
                             break;
-                    }                   
+                    }
                 }
-            }           
+            }
             recipes.OrderBy(recipe => recipe.Name).ToList();
             _recipes = recipes;
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);   
         }
 
-        public void save()
+        public virtual void Save()
         {
-
+           
         }
     }
 }
