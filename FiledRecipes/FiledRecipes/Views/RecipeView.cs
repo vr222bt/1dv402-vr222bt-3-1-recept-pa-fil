@@ -33,8 +33,10 @@ namespace FiledRecipes.Views
         {
             foreach (var recipe in recipes)
             {
+                Console.Clear();
                 Show(recipe);
                 ContinueOnKeyPressed();
+                
             }
         }
     }
