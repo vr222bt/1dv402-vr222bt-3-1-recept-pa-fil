@@ -190,7 +190,26 @@ namespace FiledRecipes.Domain
 
         public virtual void Save()
         {
-           
+            using (StreamWriter writer = new StreamWriter(_path))
+            {
+                foreach (var recipe in _recipes)
+                {
+                    writer.WriteLine(SectionRecipe);
+                    writer.WriteLine(recipe.Name);
+                    writer.WriteLine(SectionIngredients);
+                    foreach (var ingredient in recipe.Ingredients)
+                    {
+                        writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
+                    }
+                    writer.WriteLine(SectionInstructions);
+                    foreach (var instruction in recipe.Instructions)
+                    {
+                        writer.WriteLine(instruction);
+                    }
+                    writer.WriteLine(recipe.Instructions);
+
+                }
+            }
         }
     }
 }
