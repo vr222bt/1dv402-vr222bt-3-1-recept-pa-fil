@@ -128,17 +128,23 @@ namespace FiledRecipes.Domain
             }
         }
 
+        //Läser in recept
         public virtual void Load()
         {
+            //Skapar lista
             List<IRecipe> recipes = new List<IRecipe>();
             RecipeReadStatus status = RecipeReadStatus.Indefinite;
             Recipe totalRecipe = null;
+
+            //Stänger filen när den inte används
             using (StreamReader reader = new StreamReader(_path))
             {
                 
                 String line;
+                //Loop som läser in varje rad tills filen tar slut
                 while ((line = reader.ReadLine()) != null)
-                {                  
+                {                
+                    //Switch sats som håller ordning på om det är ingredienser etc..
                     switch (line)
                     {
                         
@@ -152,6 +158,7 @@ namespace FiledRecipes.Domain
                             status = RecipeReadStatus.Instruction;
                             break;
                         default:
+                            //Switch sats som gör olika saker med raden beroende på om den var instruktioner etc..
                             switch (status)
                             {
                                 case RecipeReadStatus.New:
@@ -159,6 +166,7 @@ namespace FiledRecipes.Domain
                                     recipes.Add(totalRecipe);
                                     break;
                                 case RecipeReadStatus.Ingredient:
+                                    //Delar upp ingrediens raden i Amount, Measure och Name
                                     string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
                                     if (ingredients.Length != 3)
                                     {
@@ -182,15 +190,19 @@ namespace FiledRecipes.Domain
                     }
                 }
             }
+            //Sorterar recepten efter namnet
             _recipes = recipes.OrderBy(recipe => recipe.Name).ToList();
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);   
         }
 
+        
         public virtual void Save()
         {
+            //Stänger filen när den inte används
             using (StreamWriter writer = new StreamWriter(_path))
             {
+                //Loop som skriver receptet, körs så många gånger som det finns recept
                 foreach (var recipe in _recipes)
                 {
                     writer.WriteLine(SectionRecipe);
@@ -209,6 +221,8 @@ namespace FiledRecipes.Domain
 
                 }
             }
+            IsModified = false;
+            OnRecipesChanged(EventArgs.Empty);   
         }
     }
 }
