@@ -134,26 +134,61 @@ namespace FiledRecipes.Domain
 
             using (StreamReader reader = new StreamReader(_path))
             {
+                Recipe recipe = null;
                 String line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    RecipeReadStatus status = RecipeReadStatus.Indefinite;
+                    RecipeReadStatus status = new RecipeReadStatus();
 
                     switch (line)
                     {
+                        case "":
+                            break;
+
                         case SectionRecipe:
+                            status = RecipeReadStatus.New;
                             break;
                         case SectionIngredients:
+                            status = RecipeReadStatus.Ingredient;
                             break;
                         case SectionInstructions:
+                            status = RecipeReadStatus.Instruction;
                             break;
                         default:
+                            switch (status)
+                            {
+                                case RecipeReadStatus.New:
+                                    recipe = new Recipe(line);
+                                    recipes.Add(recipe);
+                                    break;
+                                case RecipeReadStatus.Ingredient:
+                                    string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (ingredients.Length != 3)
+                                    {
+                                        throw new FileFormatException();
+                                    }
+                                    Ingredient ingredient = new Ingredient();
+                                    ingredient.Amount = ingredients[0];
+                                    ingredient.Measure = ingredients[1];
+                                    ingredient.Name = ingredients[2];
+                                    recipe.Add(ingredient);
+                                    break;
+                                case RecipeReadStatus.Instruction:
+                                    recipe.Add(line);
+                                    break;
+                                case RecipeReadStatus.Indefinite:
+                                    throw new FileFormatException();
+                                default:
+                                    break;
+                            }
                             break;
-                    }
+                    }                   
                 }
-
-
-            }                   
+            }           
+            recipes.OrderBy(recipe => recipe.Name).ToList();
+            _recipes = recipes;
+            IsModified = false;
+            OnRecipesChanged(EventArgs.Empty);   
         }
 
         public void save()
