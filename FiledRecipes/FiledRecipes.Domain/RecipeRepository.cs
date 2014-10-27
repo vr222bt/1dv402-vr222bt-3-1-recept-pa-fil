@@ -159,7 +159,7 @@ namespace FiledRecipes.Domain
                                     recipes.Add(totalRecipe);
                                     break;
                                 case RecipeReadStatus.Ingredient:
-                                    string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                                    string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
                                     if (ingredients.Length != 3)
                                     {
                                         throw new FileFormatException();
@@ -182,8 +182,7 @@ namespace FiledRecipes.Domain
                     }
                 }
             }
-            recipes.OrderBy(recipe => recipe.Name).ToList();
-            _recipes = recipes;
+            _recipes = recipes.OrderBy(recipe => recipe.Name).ToList();
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);   
         }
