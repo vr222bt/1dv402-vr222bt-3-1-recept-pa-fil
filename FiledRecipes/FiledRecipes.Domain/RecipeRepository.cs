@@ -157,6 +157,8 @@ namespace FiledRecipes.Domain
                         case SectionInstructions:
                             status = RecipeReadStatus.Instruction;
                             break;
+                        case "":
+                            break;
                         default:
                             //Switch sats som gör olika saker med raden beroende på om den var instruktioner etc..
                             switch (status)
