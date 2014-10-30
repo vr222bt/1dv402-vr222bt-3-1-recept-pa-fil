@@ -136,66 +136,71 @@ namespace FiledRecipes.Domain
             RecipeReadStatus status = RecipeReadStatus.Indefinite;
             Recipe totalRecipe = null;
 
-            //Stänger filen när den inte används
+            //Ser till så filen stängs när den inte används
             using (StreamReader reader = new StreamReader(_path))
             {
                 
                 String line;
                 //Loop som läser in varje rad tills filen tar slut
                 while ((line = reader.ReadLine()) != null)
-                {                
-                    //Switch sats som håller ordning på om det är ingredienser etc..
-                    switch (line)
+                {
+
+
+                    if (string.IsNullOrWhiteSpace(line) == false)
                     {
-                        
-                        case SectionRecipe:
-                            status = RecipeReadStatus.New;
-                            break;
-                        case SectionIngredients:
-                            status = RecipeReadStatus.Ingredient;
-                            break;
-                        case SectionInstructions:
-                            status = RecipeReadStatus.Instruction;
-                            break;
-                        case "":
-                            break;
-                        default:
-                            //Switch sats som gör olika saker med raden beroende på om den var instruktioner etc..
-                            switch (status)
-                            {
-                                case RecipeReadStatus.New:
-                                    totalRecipe = new Recipe(line);
-                                    recipes.Add(totalRecipe);
-                                    break;
-                                case RecipeReadStatus.Ingredient:
-                                    //Delar upp ingrediens raden i Amount, Measure och Name
-                                    string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
-                                    if (ingredients.Length != 3)
-                                    {
+                        //Switch sats som håller ordning på om det är ingredienser etc..
+                        switch (line)
+                        {
+
+                            case SectionRecipe:
+                                status = RecipeReadStatus.New;
+                                break;
+                            case SectionIngredients:
+                                status = RecipeReadStatus.Ingredient;
+                                break;
+                            case SectionInstructions:
+                                status = RecipeReadStatus.Instruction;
+                                break;
+                            case "":
+                                break;
+                            default:
+                                //Switch sats som gör olika saker med raden beroende på om den var instruktioner etc..
+                                switch (status)
+                                {
+                                    case RecipeReadStatus.New:
+                                        totalRecipe = new Recipe(line);
+                                        recipes.Add(totalRecipe);
+                                        break;
+                                    case RecipeReadStatus.Ingredient:
+                                        //Delar upp ingrediens raden i Amount, Measure och Name
+                                        string[] ingredients = line.Split(new string[] { ";" }, StringSplitOptions.None);
+                                        if (ingredients.Length != 3)
+                                        {
+                                            throw new FileFormatException();
+                                        }
+                                        Ingredient ingredient = new Ingredient();
+                                        ingredient.Amount = ingredients[0];
+                                        ingredient.Measure = ingredients[1];
+                                        ingredient.Name = ingredients[2];
+                                        totalRecipe.Add(ingredient);
+                                        break;
+                                    case RecipeReadStatus.Instruction:
+                                        totalRecipe.Add(line);
+                                        break;
+                                    case RecipeReadStatus.Indefinite:
                                         throw new FileFormatException();
-                                    }
-                                    Ingredient ingredient = new Ingredient();
-                                    ingredient.Amount = ingredients[0];
-                                    ingredient.Measure = ingredients[1];
-                                    ingredient.Name = ingredients[2];
-                                    totalRecipe.Add(ingredient);
-                                    break;
-                                case RecipeReadStatus.Instruction:
-                                    totalRecipe.Add(line);
-                                    break;
-                                case RecipeReadStatus.Indefinite:
-                                    throw new FileFormatException();
-                                default:
-                                    break;
-                            }
-                            break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                        } 
                     }
                 }
             }
             //Sorterar recepten efter namnet
             _recipes = recipes.OrderBy(recipe => recipe.Name).ToList();
             IsModified = false;
-            OnRecipesChanged(EventArgs.Empty);   
+            OnRecipesChanged(EventArgs.Empty);
         }
 
         
