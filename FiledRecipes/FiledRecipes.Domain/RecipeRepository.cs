@@ -145,8 +145,8 @@ namespace FiledRecipes.Domain
                 while ((line = reader.ReadLine()) != null)
                 {
 
-
-                    if (string.IsNullOrWhiteSpace(line) == false)
+                    
+                    if (!string.IsNullOrWhiteSpace(line))
                     {
                         //Switch sats som håller ordning på om det är ingredienser etc..
                         switch (line)
